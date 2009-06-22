@@ -1,0 +1,3 @@
+set style line 1 lt 1 lw 6 # in gnuplot 4.0 script
+set term postscript
+set output "YOUR-OUTPUT-FILE-NAME" 

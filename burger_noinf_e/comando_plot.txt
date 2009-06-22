@@ -1,0 +1,1 @@
+plot 'burger_noinf_e.dat' using 19:9 w l,'burger_noinf_e.dat' using 19:19 w l,'burger_noinf_e.dat' using 19:29 w l,'burger_noinf_e.dat' using 19:39 w l,'burger_noinf_e.dat' using 19:49 w l,'burger_noinf_e.dat' using 19:59 w l,'burger_noinf_e.dat' using 19:69 w l,'burger_noinf_e.dat' using 19:79 w l,'burger_noinf_e.dat' using 19:89 w l,;

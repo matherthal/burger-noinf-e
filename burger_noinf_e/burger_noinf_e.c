@@ -7,10 +7,14 @@
 
 #include <stdio.h>
 #include <math.h>
+/*#include "string.h";*/
+
+#define PI 3.1415926
 
 /* Programa de demonstracao que implementa o metodo de resolucao de equacao */
-/* parabolica  por um metodo explicito */
+/* de conveccao  por um metodo explicito */
 
+/*float f(float x);*/
 float f(float x)
 /* Funcao que da' a condicao inicial */
 {
@@ -20,24 +24,33 @@ float f(float x)
 		return(0.0);
 }
 
-/*float f(float x);*/
-
 int main(void)
 {
-	FILE *outf;
+	fprintf(stdout, "Universidade Federal Fluminense - UFF");
+	fprintf(stdout, "\nAluno: Matheus de Sá Erthal");
+	fprintf(stdout, "\nLista de exercícios 2009 - Questão II");
+	fprintf(stdout, "\nResolução da Equação de Burger num meio infinito por um método explícito.\n");
 
-	float solucao[600][50],
-		t, t0, tfim, x, x0, xfim, h, k, alfa, lambda;
+	FILE *outf;
+	FILE *cmdplotf;
+
+	/*char comandoplot[] = "plot ";*/
+
+	float solucao[600][1200],
+		  t, t0, tfim, x, x0, xfim, xpulso,
+		  deltat, deltax, alfa, c, v, k;
 
 	int i, j, nx, nt;
 
-	if ((outf = fopen("difusao.dat", "w")) == NULL)
+	if (((outf = fopen("burger_noinf_e.dat", "w")) == NULL) || ((cmdplotf = fopen("comando_plot.txt", "w")) == NULL))
 	{
-		printf("\nProblemas na abertura do arquivo\n");
+		printf("\nProblemas na abertura do arquivo");
 	}
 
-	h = 0.001; 	/* Discretizacao do tempo */
-	k = 0.01;  	/* Discretizacao do espaco */
+	fprintf(cmdplotf, "plot ");
+
+	deltat = 0.001; /* Discretizacao do tempo */
+	deltax = 0.01;   /* Discretizacao do espaco */
 
 	t0   = 0.0;
 	tfim = 0.1;
@@ -45,54 +58,54 @@ int main(void)
 	x0   = 0.0;
 	xfim = 0.2;
 
-	nt = (int) ((tfim - t0)/h) + 2;		/* Numero de "t's" */
-	nx = (int) ((xfim - x0)/k) + 2;		/* Numero de "x's" */
+	alfa = 0.01;
 
-	fprintf(stdout, "\n Numero de intervalos temporais %d e espaciais %d", nt, nx);
+	nt = (int) ((tfim - t0)/deltat);
+	nx = (int) ((xfim - x0)/deltax);
+
+	fprintf(stdout, "\nNumero de intervalos temporais %d e espaciais %d", nt, nx);
 
 	/* Parametros fisicos e variavel auxiliar */
 
-	alfa = 1.0;
+	/*v = 1.0;*/
+	/*v = 1.1;*/
+	v = 2.0;
+	fprintf(stdout, "\nVelocidade = %f",v);
 
-	lambda = alfa * h/(k * k);
-	/*fprintf(stdout, "\n lambda = %f",lambda);*/
-	x = x0;
-	t = t0;
+	c = v * deltat/deltax;
+
+	k = (alfa*deltat)/(deltax*deltax);
+
+	xpulso = (xfim - x0)/2.0;
 
 	/* Condicao inicial */
-	for (j = 0; j < nx; j++)
-	{
-		solucao[0][j] = f(x);
-		/*fprintf(stdout, "\n %d - solucao[0][%d] = %f", j, j, solucao[0][j]);*/
 
-		x += k;
-		/*fprintf(stdout, "\n x = %f",x);*/
+	x = x0;
+
+	for (j = 1; j < nx - 2; j++)
+	{
+		solucao[0][j] = f(x - xpulso);
+
+		x += deltax;
 	}
 
-	/* Condicao de contorno */
+	t = t0;
+
 	for (i = 0; i < nt; i++)
 	{
-		fprintf(stdout, "\n i = %d",i);
-		t += h;
-		solucao[i+1][0] = f(x0);
-		solucao[i+1][nx - 1] = f(xfim);
+		t += deltat;
 
-		fprintf(stdout, "\n phi(%d,%d) = %f",i+1,0,solucao[i+1][0]);
-
-		//for (j = 1; j < nx - 1; j++)
+		for (j = 1; j < nx - 1; j++)
 		{
-			/*solucao[i + 1][j] = lambda * (solucao[i][j + 1] + solucao[i][j - 1]) +
-				(1.0 - 2.0 * lambda) * solucao[i][j];*/
-			/*fprintf(stdout, "\n phi(%d,%d) = %f*(phi(%d,%d) + phi(%d,%d)) + %f*phi(%d,%d) = %f",
-					(i+1),j,lambda,i,(j+1),i,(j-1),(1.0 - 2.0 * lambda),i,j,solucao[i + 1][j]);*/
-			solucao[i + 1][j] = (1 - 2*lambda - (h/k)*(solucao[i][j+1] - solucao[i][j]))*solucao[i][j] +
-				lambda*(solucao[i][j+1] + solucao[i][j-1]);
-			fprintf(stdout, "\n phi(%d,%d) = %f*%f + %f*(%f + %f) = %f",(i+1),j,(1.0 - 2.0 * lambda),solucao[i][j],
-				lambda,solucao[i][j + 1],solucao[i][j - 1],solucao[i + 1][j]);
+			solucao[i + 1][j] = (1 - 2*k)*solucao[i][j]  - c*(solucao[i][j + 1] - solucao[i][j]) +
+				k*(solucao[i][j + 1] + solucao[i][j - 1]);
 		}
 
-		fprintf(stdout, "\n phi(%d,%d) = %f",i+1,(nx-1),solucao[i+1][nx-1]);
+		if ((i+1)%10 == 0)
+			fprintf(cmdplotf, "'burger_noinf_e.dat' using %d:%d w l,",nx-1,i);
 	}
+
+	fprintf(cmdplotf, ";");
 
 	x = x0;
 
@@ -104,7 +117,10 @@ int main(void)
 			fprintf(outf, "%f ", solucao[i][j]);
 		}
 		fprintf(outf, "\n");
-		x += k;
+		x += deltax;
 	}
 
+	fclose(cmdplotf);
+	fclose(outf);
 }
+
