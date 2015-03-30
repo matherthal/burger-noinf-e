@@ -1,0 +1,1 @@
+Programa pra resolver a eq de Burger num meio infinito usando um método explícito
